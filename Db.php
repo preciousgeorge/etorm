@@ -7,12 +7,26 @@
  */
 
 class Db{
-    protected $con;
+    /** var $con PDO resource **/
+    protected $con = "";
+    
+    /** var $host string**/
     protected $host = "";
+    
+    /** $user string **/
     protected $user = "";
+    
+    /** $pwd  string **/
     protected $pwd = "";
+    
+    /** $db string **/
     protected $db = "";
+    
+    /** $stmt  string**/
     protected $stmt = "";
+    
+    /** $exceptions array **/
+    protected $exceptions = [];
 
 
     /**
@@ -36,25 +50,29 @@ class Db{
     /*
      * prepare an sql statement for data manipulation 
      * @param string $sql - valid sql statement
+     * @return $this db object
      */
     public function prepare($sql){
         try{
          $this->stmt = $this->con->prepare($sql);
         }catch(PDOException $e){
-            return $e->getMessage();
+            $this->exceptions = $e->getMessage() ." on Line ". $e->getLine();
+            return false; 
         }
+        return $this;
     }
     
     /**
      * bind each array value to an sql value position
      * @param array $values
-     * 
+     * @return $this db object
      */
     public function bindWithStatements(array $values){
         $count = count($values);
         for($i = 0; $i < $count; $i++){
             $this->stmt->bind($i, $values[$i]);
         }
+        return $this;
     }
     
     /**
@@ -65,6 +83,17 @@ class Db{
     public function executeSql(){
         if($this->stmt->execute){
             return true;
+        }
+        return false;
+    }
+    
+    /**
+     * fetch exceptions caught 
+     */
+    
+    public function getExceptions(){
+        if($this->exceptions){
+           return $this->exceptions;
         }
         return false;
     }
